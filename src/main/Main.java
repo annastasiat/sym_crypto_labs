@@ -13,6 +13,6 @@ public class Main {
         System.out.println("\nText length(symbols): " + text.getLength());
         System.out.println("H1: " + text.H(1));
         System.out.println("H2: " + text.H(2));
-        text.printNgrams(1);
+        //text.printNgrams(1);
     }
 }

@@ -10,14 +10,16 @@ import java.util.*;
 public class Text {
     private String str;
     private String filename;
+    private boolean spaces;
 
-    public Text(String filename) {
+    public Text(String filename, Boolean spaces) {
         Path path = Paths.get("texts/" + filename);
         this.filename = filename;
+        this.spaces = spaces;
         try {
             str = String.join(" ", Files.readAllLines(path))
                     .toLowerCase()
-                    .replaceAll("[^а-я ё]", "")
+                    .replaceAll(spaces?"[^а-я ё]":"[^а-яё]", "")
                     .replaceAll("[ ]{2,}", " ")
                     .trim();
         } catch (IOException e) {
@@ -56,13 +58,15 @@ public class Text {
         }
         //print to file:
         try {
-            Path path = Paths.get("results/" + n + "_gram_results_" + filename.substring(0, filename.length() - 3) + "tsv");
-            Files.write(path, String.valueOf(n).concat("грамма\tчастота\n").getBytes());
+            Path path = Paths.get("results/" + n + "_grams_"
+                    + (spaces ? "" : "no_spaces_")+ filename.replaceAll("\\.txt", "") + ".tsv");
+            Files.write(path, (n + "грамма\tчастота\n").getBytes());
             Files.write(path, resStr.toString().getBytes(), StandardOpenOption.APPEND);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     public int getLength() {
         return str.length();

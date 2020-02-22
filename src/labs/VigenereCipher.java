@@ -154,23 +154,22 @@ public class VigenereCipher {
         String message = "";
 
         //RUS LANGUAGE LETTERS FREQUENCIES
-        List<Map.Entry<String, Double>> rusFreq/*= new ArrayList<>()*/=
-                new ArrayList<>((new Text("voyna-i-mir-tom-1", LAB2_ALPHABET)).ngrams(1, true).entrySet());
-        rusFreq.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
-        System.out.println(rusFreq);
+        List<Map.Entry<String, Double>> rusFreq = new ArrayList<>();
+        // =new ArrayList<>((new Text("voyna-i-mir-tom-1", LAB2_ALPHABET)).ngrams(1, true).entrySet());
 
         try {
             message = String.join("", Files.readAllLines(Paths.get(textFilename)));
-            //rusFreq = new ArrayList<>(Files.readAllLines(Paths.get(rusFreqFilename)).stream().collect(Collectors.toMap(
-            //        k -> k.split("\t")[0], v -> Double.valueOf(v.split("\t")[1].replace(',','.'))
-            //)).entrySet());
+            rusFreq = new ArrayList<>(Files.readAllLines(Paths.get(rusFreqFilename)).stream().collect(Collectors.toMap(
+                    k -> k.split("\t")[0], v ->
+                            Double.valueOf(v.split("\t")[1].replace(',', '.')))).entrySet());
+            rusFreq.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+
         //TEXT SEQUENCES LETTERS FREQUENCIES
         int charsInOneSequence = message.length() / r;
-        System.out.println("charsInOneSequence"+ charsInOneSequence);
         List<List<Character>> sequences = new ArrayList<>();
         List<List<Map.Entry<Character, Double>>> sequencesFreq = new ArrayList<>();
 
@@ -202,7 +201,7 @@ public class VigenereCipher {
             StringBuilder title =
                     new StringBuilder().append("rus_char\trus_freq\t");
             for (int i = 0; i < LAB2_ALPHABET.length(); i++) {
-                int k=0;
+                int k = 0;
                 StringBuilder line =
                         new StringBuilder().append(rusFreq.get(i).getKey()).append(TAB)
                                 .append(String.format("%.3f", rusFreq.get(i).getValue() * 100)).append(TAB);
@@ -212,13 +211,13 @@ public class VigenereCipher {
                     } else {
                         line.append("-").append(TAB).append("-").append(TAB);
                     }
-                    if(i==0){
+                    if (i == 0) {
                         title.append("seq").append(k).append(TAB).append("seq").append(k).append(TAB);
                     }
                     k++;
 
                 }
-                if(i==0)out.write(title.append(LF).toString().getBytes());
+                if (i == 0) out.write(title.append(LF).toString().getBytes());
                 out.write(line.append(LF).toString().getBytes());
             }
         } catch (IOException e) {
@@ -228,7 +227,6 @@ public class VigenereCipher {
 
 //KEY FINDING
         StringBuilder key = new StringBuilder();
-        System.out.println("key: ");
         for (List<Map.Entry<Character, Double>> seqFreq : sequencesFreq) {
             Map<Character, Integer> caesarKeyMaybe = new HashMap<>();
             for (int i = 0; i < seqFreq.size(); i++) {

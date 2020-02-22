@@ -20,12 +20,14 @@ public class Main {
     public static void main(String[] args) {
 
         String rusAlphSpace = " абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
+/*
 
         Text text = new Text("voyna-i-mir-tom-1",  "абвгдежзийклмнопрстуфхцчшщъыьэюя");
         text.printNgrams(1,true, 1);
+*/
 
 
-        VigenereCipher.printIndexesOfCoincidence("texts/var12_lab2.txt",  "lab2/task3/var12_lab2_ic.tsv", 2, 31);
+
 /*
         try {
             Runtime.getRuntime().exec("python plot_ic.py lab2/task3/var12_lab2.tsv lab2/task3/var12_lab2.png");
@@ -36,12 +38,9 @@ public class Main {
         //VigenereCipher.perform(VigenereCipher::encryptChar, "texts/test.txt", "lab2/en_test.txt","ывапрокеукенготимавкенр");
         //VigenereCipher.perform(VigenereCipher::decryptChar, "lab2/en_test.txt", "lab2/de_test.txt", "ывапрокеукенготимавкенр");
 
-
+        //VigenereCipher.printIndexesOfCoincidence("texts/var12_lab2.txt",  "lab2/task3/var12_lab2_ic.tsv", 2, 31);
         VigenereCipher.findKey("texts/var12_lab2.txt", "lab2/task3/var12_lab2",
-                "lab1/voyna-i-mir-tom-11_grams_no_spaces___no_cross___.tsv",14);
+                "lab1/voyna-i-mir-tom-1_letters_freq.tsv",14);
 
-        System.out.println((int)',');
-        System.out.println((int)'\n');
-        System.out.println((int)'й');
     }
 }

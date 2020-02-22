@@ -20,15 +20,12 @@ public class Text {
         try {
             str = String.join(" ", Files.readAllLines(path))
                     .toLowerCase()
-                    .replaceAll("ё", "е")
                     .replaceAll("[^" + alphabet + "]", "")
                     .replaceAll("[ ]{2,}", " ")
                     .trim();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        System.out.println(str.length());
     }
 
     public Map<String, Double> ngrams(int n, boolean cross) {
@@ -57,16 +54,19 @@ public class Text {
 
     public void printNgrams(int n, boolean cross, int multiplier) {
         List<Map.Entry<String, Double>> ngramsProbs = new ArrayList<>(ngrams(n, cross).entrySet());
-        String outFilename = "lab1/"
-                + filename+ n + "_grams_" + (spaces ? "spaces_" : "no_spaces___") + (cross && n != 1 ? "cross_" : "no_cross___")+".tsv";
-System.out.println(outFilename);
+        String outFilename;
+        if (n != 1) {
+            outFilename = "lab1/" + filename + n + "_grams_" + (spaces ? "spaces_" : "no_spaces_") + (cross ? "cross_" : "no_cross___") + ".tsv";
+        } else {
+            outFilename = "lab1/" + filename + (spaces ? "_spaces" : "") + "_letters_freq.tsv";
+        }
         //sort
         ngramsProbs.sort(Map.Entry.comparingByValue(Comparator.reverseOrder())); //ngramsProbs.sort(Comparator.comparing(Map.Entry::getValue, Comparator.reverseOrder()));
 
         try (OutputStream out = new FileOutputStream(outFilename)) {
             //out.write((n + "грамма\tчастота*" + multiplier + "\n").getBytes());
             for (Map.Entry<String, Double> i : ngramsProbs) {
-                out.write((i.getKey() + "\t" + i.getValue() + "\n").getBytes()); ////!!!!!!!!
+                out.write((i.getKey() + "\t" + i.getValue() * multiplier + "\n").getBytes()); ////!!!!!!!!
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,8 +76,8 @@ System.out.println(outFilename);
     public void printTable(int n, boolean cross, int multiplier) {
         Map<String, Double> ngramsProbs = ngrams(n, cross);
         String[] alphabetArr = alphabet.split("");
-        String outFilename = "lab1/table_2grams_" + (spaces ? "spaces_" : "no_spaces_") + (cross && n != 1 ? "cross_" : "no_cross___")
-                + filename+ ".tsv";
+        String outFilename = "lab1/table_2grams_" + (spaces ? "spaces_" : "") + (cross && n != 1 ? "cross_" : "no_cross___")
+                + filename + ".tsv";
 
         try (OutputStream out = new FileOutputStream(outFilename)) {
             out.write((" \t" + String.join("\t", alphabetArr) + "\n").getBytes());
@@ -103,19 +103,19 @@ System.out.println(outFilename);
         return str;
     }
 
-    public Map<String, Integer> MapLetterInt(){
+    public Map<String, Integer> MapLetterInt() {
         String[] alphabetArr = alphabet.split("");
         Map<String, Integer> letterInt = new HashMap<>();
-        for(int i=0; i<alphabetArr.length; i++){
+        for (int i = 0; i < alphabetArr.length; i++) {
             letterInt.put(alphabetArr[i], i);
         }
         return letterInt;
     }
 
-    public Map<Integer, String> MapIntLetter(){
+    public Map<Integer, String> MapIntLetter() {
         String[] alphabetArr = alphabet.split("");
         Map<Integer, String> intLetter = new HashMap<>();
-        for(int i=0; i<alphabetArr.length; i++){
+        for (int i = 0; i < alphabetArr.length; i++) {
             intLetter.put(i, alphabetArr[i]);
         }
         return intLetter;

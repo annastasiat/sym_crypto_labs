@@ -6,31 +6,32 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class VigenereCipher {
-    private final static String LAB2_ALPHABET = "абвгдежзийклмнопрстуфхцчшщъыьэюя";
-    private final static int ALPHABET_LEN = 1112;
+public interface VigenereCipher {
+    String LAB2_ALPHABET = "абвгдежзийклмнопрстуфхцчшщъыьэюя";
+    int ALPHABET_LEN = 1112;
+    List<String> MY_KEYS = Arrays.asList("rg", "fgh", "ebjg", "slgjy", "qdrgtkdvkatrldb");
 
-    public static char encryptChar(char x, char keyI) {
+    static char encryptChar(char x, char keyI) {
         return (char) (((int) x + keyI) % 1112);
     }
 
-    public static char decryptChar(char x, char keyI) {
+    static char decryptChar(char x, char keyI) {
         return (char) (((int) x + 1112 - keyI) % 1112);
     }
 
-    public static char keyGet(char x, char y) {
+    static char keyGet(char x, char y) {
         return (char) (((int) x - (int) y + 32) % 32 + 1072);
     }
 
-    public static char rusEncryptChar(char x, char keyI) {
+    static char rusEncryptChar(char x, char keyI) {
         return (char) (((int) x - 1072 + (int) keyI - 1072) % 32 + 1072);
     }
 
-    public static char rusDecryptChar(char x, char keyI) {
+    static char rusDecryptChar(char x, char keyI) {
         return (char) (((int) x - (int) keyI + 32) % 32 + 1072);
     }
 
-    private static List<List<Character>> getSequences(String message, int r){
+    static List<List<Character>> getSequences(String message, int r) {
         int charsInOneSequence = message.length() / r;
         List<List<Character>> sequences = new ArrayList<>();
 
@@ -43,7 +44,7 @@ public class VigenereCipher {
         return sequences;
     }
 
-    private static Map<Character, Integer> N(List<Character> text){
+    static Map<Character, Integer> N(List<Character> text) {
         Map<Character, Integer> frequencies = new HashMap<>();
         for (Character letter : text) {
             frequencies.put(letter, frequencies.getOrDefault(letter, 0) + 1);
@@ -51,7 +52,7 @@ public class VigenereCipher {
         return frequencies;
     }
 
-    public static void perform(CharMapperWithKey charMapper, String inputFilename, String outputFilename, String key) {
+    static void perform(CharMapperWithKey charMapper, String inputFilename, String outputFilename, String key) {
         String text = "";
 
         //READ
@@ -73,46 +74,32 @@ public class VigenereCipher {
         }
     }
 
-    public static void lab2Task2(String plaintextFilename, String resultsFileMainName) {
+    static void lab2Task2(String plaintextFilename, String resultsFileMainName) {
 
-        List<String> keys = new ArrayList<>();
-        keys.add("rg");
-        keys.add("fgh");
-        keys.add("ebjg");
-        keys.add("slgjy");
-        keys.add("qdrgtkdvkatrldb");
-
-        String resultsFileNameTsv;
-        String resultsFileNamePng;
+        String resultsFileNameLen;
         String ciphertextFilename;
 
         printIndexesOfCoincidence(plaintextFilename, resultsFileMainName + "_plain", 1, 2);
 
-        for (String key : keys) {
-            resultsFileNameTsv = resultsFileMainName + key.length() + ".tsv";
-            resultsFileNamePng = resultsFileMainName + key.length() + ".png";
-            ciphertextFilename = resultsFileMainName + key.length() + "_en.txt";
+        for (String key : MY_KEYS) {
+            resultsFileNameLen = resultsFileMainName + key.length();
+            ciphertextFilename = resultsFileNameLen + "_en.txt";
 
             perform(VigenereCipher::encryptChar, plaintextFilename, ciphertextFilename, key);
-            perform(VigenereCipher::decryptChar, ciphertextFilename, resultsFileMainName + key.length() + "_de.txt", key);
+            perform(VigenereCipher::decryptChar, ciphertextFilename, resultsFileNameLen + "_de.txt", key);
 
-            printIndexesOfCoincidence(ciphertextFilename, resultsFileMainName + key.length(), 2, 33);
-/*
-            try {
-                Runtime.getRuntime().exec("python plot_ic.py " + resultsFileNameTsv + " " + resultsFileNamePng);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }*/
+            printIndexesOfCoincidence(ciphertextFilename, resultsFileNameLen + "_ic", 2, 33);
+
         }
 
         try {
-            Runtime.getRuntime().exec("python plot_ic_all.py " + resultsFileMainName + " " + resultsFileMainName+ ".png");
+            Runtime.getRuntime().exec("python plot_ic_all.py " + resultsFileMainName + " " + resultsFileMainName + "_ic.png");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void printIndexesOfCoincidence(String textFilename, String mainResultsFileName, int rMin, int rMax) {
+    static void printIndexesOfCoincidence(String textFilename, String mainResultsFileName, int rMin, int rMax) {
 
         String text = "";
 
@@ -128,23 +115,22 @@ public class VigenereCipher {
         }
 
         ///PRINT
-        try (OutputStream out = new FileOutputStream(mainResultsFileName+ ".tsv")) {
+        try (OutputStream out = new FileOutputStream(mainResultsFileName + ".tsv")) {
             for (int i = 0; i < rMax - rMin; i++) {
                 out.write((i + rMin + "\t" + textIndexes.get(i) + "\n").getBytes());
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         try {
-            Runtime.getRuntime().exec("python plot_ic.py " + mainResultsFileName+ ".tsv" + " " + mainResultsFileName+ ".png");
+            Runtime.getRuntime().exec("python plot_ic.py " + mainResultsFileName + ".tsv" + " " + mainResultsFileName + ".png");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    public static double indexOfCoincidence(String message, int r) {
+    static double indexOfCoincidence(String message, int r) {
 
         int charsInOneSequence = message.length() / r;
         double ICMult = 1. / ((charsInOneSequence) * (charsInOneSequence - 1));
@@ -166,11 +152,11 @@ public class VigenereCipher {
 
     }
 
-    public static void lab2Task3(String textFilename, String mainFilename, String rusFreqFilename, int r) {
+    static void lab2Task3(String textFilename, String mainFilename, String rusFreqFilename, int r) {
         String message = "";
 
         //PINT INDEXES OF COINCIDENCE TABLE AND DIAGRAM
-        printIndexesOfCoincidence(textFilename,  mainFilename +"_ic", 2, 31);
+        printIndexesOfCoincidence(textFilename, mainFilename + "_ic", 2, 31);
 
         //READING TEXT AND RUS LANG PROBABILITIES
         List<Map.Entry<Character, Double>> rusFreqSorted = new ArrayList<>();
@@ -237,7 +223,7 @@ public class VigenereCipher {
 
     }
 
-    public static String getKeyVar1(List<List<Map.Entry<Character, Double>>> sequencesFreq, List<Map.Entry<Character, Double>> rusFreq) {
+    static String getKeyVar1(List<List<Map.Entry<Character, Double>>> sequencesFreq, List<Map.Entry<Character, Double>> rusFreq) {
         StringBuilder key = new StringBuilder();
         for (List<Map.Entry<Character, Double>> seqFreq : sequencesFreq) {
             key.append(keyGet(seqFreq.get(0).getKey(), rusFreq.get(0).getKey()));
@@ -256,179 +242,22 @@ public class VigenereCipher {
         return key.toString();
     }
 
-    public static String getKeyVar2(List<Map<Character, Integer>> NS, Map<Character, Double> rusFreq) {
+    static String getKeyVar2(List<Map<Character, Integer>> NS, Map<Character, Double> rusFreq) {
         StringBuilder key = new StringBuilder();
         for (Map<Character, Integer> N : NS) {
-            int m = -1;
+            int maxM = -1;
             char k = 'a';
             for (char g : LAB2_ALPHABET.toCharArray()) {
-                int mg = 0;
+                int Mg = 0;
                 for (char t : LAB2_ALPHABET.toCharArray()) {
-                    mg += rusFreq.get(t) * N.getOrDefault((char) ((t + g) % 32 + 1072), 0);
+                    Mg += rusFreq.get(t) * N.getOrDefault((char) ((t + g) % 32 + 1072), 0);
                 }
-                k = (mg > m) ? g : k;
-                m = Math.max(mg, m);
+                k = (Mg > maxM) ? g : k;
+                maxM = Math.max(Mg, maxM);
             }
             key.append(k);
 
         }
         return key.toString();
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*public static void encrypt(String inputFilename, String outputFilename, String key) {
-        List<String> message = new ArrayList<>();
-
-        try (Stream<String> stream = Files.lines(Paths.get(inputFilename))) {
-            message = stream.collect(Collectors.toList());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        int messageLength = 0;
-        try (OutputStream out = new FileOutputStream(outputFilename)) {
-            //for each line
-            for (int i = 0; i < message.size(); i++) {
-                String line = message.get(i);
-                //for each char in line
-                for (int j = 0; j < line.length(); j++) {
-                    //write mapped char
-                    out.write(Character.toString(
-                            (char) (((int) line.charAt(j) + key.charAt((messageLength + j) % key.length())) % 1112))
-                            .getBytes());
-
-                }
-                //if  next - the end of the line
-                if (i != message.size() - 1)
-                    //map '\n' and write
-                    out.write(Character.toString(
-                            (char) (((int) '\n' + key.charAt((messageLength + line.length()) % key.length())) % 1112))
-                            .getBytes());
-                //increace messageLength beacouse of '\n'
-                messageLength += line.length() + 1;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void decrypt(String inputFilename, String outputFilename, String key) {
-        List<String> message = new ArrayList<>();
-
-        try (Stream<String> stream = Files.lines(Paths.get(inputFilename))) {
-            message = stream.collect(Collectors.toList());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        int messageLength = 0;
-
-        try (OutputStream out = new FileOutputStream(outputFilename)) {
-            //out.write((n + "грамма\tчастота*" + multiplier + "\n").getBytes());
-            for (int i = 0; i < message.size(); i++) {
-                String line = message.get(i);
-                for (int j = 0; j < line.length(); j++) {
-                    out.write(Character.toString((char) (((int) line.charAt(j) + 1112 - key.charAt((messageLength + j) % key.length())) % 1112)).getBytes());
-
-                }
-                if (i != message.size() - 1)
-                    out.write(Character.toString((char) (((int) '\n' + 1112 - key.charAt((messageLength + line.length()) % key.length())) % 1112)).getBytes());
-                messageLength += line.length() + 1;
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-
-
-    }
-
- }*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-   /*
-
-       public static void analyze(String filename) {
-        String message = "";
-
-        try {
-            message = String.join("", Files.readAllLines(Paths.get(filename)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        int period = getPeriod(message);
-    }
-
-   public static double indexOfCoincidence(int r, String filename, int task) {
-        double indexOfCoincidence = 0;
-        String message = "";
-
-        try (Stream<String> stream = Files.lines(Paths.get(filename))) {
-            message = stream.collect(Collectors.joining("\n"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Map<Character, Integer> freq = new HashMap<>();
-        for (char x : message.toCharArray()) {
-            freq.put(x, freq.getOrDefault(x, 0) + 1);
-        }
-
-        if (task == 1) {
-            for (int i = 0; i < ALPHABET_LEN; i++) {
-                indexOfCoincidence += freq.getOrDefault((char) i, 0) * (freq.getOrDefault((char) i, 0) - 1);
-            }
-        } else {
-            for (char x : LAB2_ALPHABET.toCharArray()) {
-                indexOfCoincidence += freq.getOrDefault(x, 0) * (freq.getOrDefault(x, 0) - 1);
-            }
-        }
-
-        return indexOfCoincidence / (message.length() * (message.length() - 1));
-
-
-    }
-
-    public static int getPeriod(String message) {
-        double indexOfCoincidence = 0;
-
-        Map<Character, Integer> freq = new HashMap<>();
-        for (char x : message.toCharArray()) {
-            freq.put(x, freq.getOrDefault(x, 0) + 1);
-        }
-
-        for (char x : LAB2_ALPHABET.toCharArray()) {
-            indexOfCoincidence += freq.get(x) * (freq.get(x) - 1);
-        }
-
-        indexOfCoincidence *= 1.0 / (message.length() * (message.length() - 1));
-
-
-        return 0;
-
-    }*/
 }

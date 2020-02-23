@@ -8,7 +8,7 @@ def plot_IC_all(filename, plot_file_name):
     #colors = ['darkturquoise', 'cadetblue','deepskyblue', 'turquoise', 'yellowgreen']
     plt.figure(figsize=(8,4))
     for i in range(len(rs)):
-        data = np.genfromtxt(filename + str(rs[i]) + '.tsv', delimiter='\t')
+        data = np.genfromtxt(filename + str(rs[i]) + '_ic.tsv', delimiter='\t')
         plt.bar(data.T[0]+0.2*i, data.T[1], width=0.2, color=colors[i], label='r='+str(rs[i]))
         plt.xticks(data.T[0])
     plt.legend()

@@ -12,11 +12,12 @@ def plot_IC_all(filename, plot_file_name):
         plt.bar(data.T[0]+0.2*i, data.T[1], width=0.2, color=colors[i], label='r='+str(rs[i]))
         plt.xticks(data.T[0])
     plt.legend()
-    plt.title("Index of coincidence")
+    plt.title("Indexes of coincidence")
     plt.xlabel('r')
     plt.ylabel('I(Y)')
     plt.savefig(plot_file_name, dpi=300)
 
 
-plot_IC_all("lab2/task12/test", "lab2/task12/test.png")
+plot_IC_all(sys.argv[1], sys.argv[2])
+#plot_IC_all("lab2/task12/test", "lab2/task12/test.png")
 

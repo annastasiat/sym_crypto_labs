@@ -38,8 +38,9 @@ public class Main {
         //VigenereCipher.perform(VigenereCipher::encryptChar, "texts/test.txt", "lab2/en_test.txt","ывапрокеукенготимавкенр");
         //VigenereCipher.perform(VigenereCipher::decryptChar, "lab2/en_test.txt", "lab2/de_test.txt", "ывапрокеукенготимавкенр");
 
-        //VigenereCipher.printIndexesOfCoincidence("texts/var12_lab2.txt",  "lab2/task3/var12_lab2_ic.tsv", 2, 31);
-        VigenereCipher.findKey("texts/var12_lab2.txt", "lab2/task3/var12_lab2",
+        //VigenereCipher.printIndexesOfCoincidence("texts/var12_lab2.txt",  "lab2/task3/var12_lab2_ic", 2, 31);
+        VigenereCipher.lab2Task2("texts/test.txt", "lab2/task12/test");
+        VigenereCipher.lab2Task3("texts/var12_lab2.txt", "lab2/task3/var12_lab2",
                 "lab1/voyna-i-mir-tom-1_letters_freq.tsv",14);
 
     }

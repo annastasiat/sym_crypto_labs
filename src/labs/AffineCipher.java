@@ -12,14 +12,14 @@ import java.util.stream.Collectors;
 public interface AffineCipher {
     String TAB = "\t";
     String LINE_SEPARATOR = System.lineSeparator();//"\n";
-    String LAB3_ALPHABET = "абвгдежзийклмнопрстуфхцчшщыьэюя";
+    String LAB3_ALPHABET = "абвгдежзийклмнопрстуфхцчшщьыэюя";
     Map<String, Double> RUS_BIGRAMS_PROBABILITIES = readGrams("lab1/2_grams_no_spaces_cross_voyna-i-mir-tom-1.tsv");
     int M_SQUARED = LAB3_ALPHABET.length() * LAB3_ALPHABET.length();
 
     static int inverse(int a, int b) {
+        assert (gcd(a, b) == 1);
         int x = a;
         int y = b;
-        assert (gcd(a, b) == 1);
         int u0 = 1, u1 = 0;
         while (b != 0) {
             int temp = u1;
@@ -32,11 +32,6 @@ public interface AffineCipher {
         }
         assert (Math.floorMod(u0 * x, y) == 1);
         return u0;
-        /*a = a % b;
-        for (int x = 1; x < b; x++)
-            if (Math.floorMod((a * x) , b) == 1)
-                return x;
-        return 1;*/
     }
 
     static int gcd(int a, int b) {
@@ -74,9 +69,8 @@ public interface AffineCipher {
     }
 
 
-    static void findKeys(String mainFilename) throws IOException {
-        Text textObj = new Text(String.join("", Files.readAllLines(Paths.get("texts/" + mainFilename + ".txt"))),
-                mainFilename, LAB3_ALPHABET);
+    static void findKeys(String mainFilename) {
+        Text textObj = new Text(mainFilename, LAB3_ALPHABET);
         List<Map.Entry<String, Double>> textBigramsSorted = new ArrayList<>(
                 textObj.ngrams(2, false).entrySet());
         textBigramsSorted.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
@@ -103,9 +97,13 @@ public interface AffineCipher {
                                 if (gcd(a, M_SQUARED) == 1) {
                                     String detext = perform(AffineCipher::rusDecrypt, text, inverse(a, M_SQUARED), b);
                                     if (rusLangRecogniser(detext)) {
-                                        System.out.println("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFOOOOOOOOOOOOOOOOOOOUUUUUUUUUUNNNNNDDD");
                                         System.out.println("a: " + a + "  b: " + b);
-                                        Files.write(Paths.get("lab3/" + mainFilename + "__" + a + "_" + b + ".txt"), detext.getBytes());
+                                        try {
+                                            Files.write(Paths.get("lab3/key.txt"), ("a: " + a + "  b: " + b).getBytes());
+                                            Files.write(Paths.get("lab3/" + mainFilename + "__" + a + "_" + b + ".txt"), detext.getBytes());
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
                                         return;
                                     }
                                 }
@@ -117,18 +115,7 @@ public interface AffineCipher {
         }
     }
 
-    static void perform(TriFunction<String, Integer, Integer, String> mapper, String inputFilename, String mainOutputFilename, int a, int b) throws IOException {
-        String text = String.join("", Files.readAllLines(Paths.get(inputFilename)));
-        try (OutputStream out = new FileOutputStream("lab3/" + mainOutputFilename + ".txt")) {
-            for (int i = 0; i < text.length() / 2; i++) {
-                out.write(mapper.apply(text.substring(2 * i, 2 * i + 2), a, b).getBytes());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    static String perform(TriFunction<String, Integer, Integer, String> mapper, String text, int a, int b) throws IOException {
+    static String perform(TriFunction<String, Integer, Integer, String> mapper, String text, int a, int b) {
         StringBuilder res = new StringBuilder();
         for (int i = 0; i < text.length() / 2; i++) {
             res.append(mapper.apply(text.substring(2 * i, 2 * i + 2), a, b));
@@ -138,10 +125,17 @@ public interface AffineCipher {
 
 
     static int bigramToInt(String bigram) {
-        int first = bigram.charAt(0) - 1072;
+        /*int first = bigram.charAt(0) - 1072;
         int second = bigram.charAt(1) - 1072;
+        if (bigram.charAt(0) == 'ы') {
+            first++;
+        } else if (bigram.charAt(0) == 'ь') first--;
+        if (bigram.charAt(1) == 'ы') {
+            first++;
+        } else if (bigram.charAt(1) == 'ь') first--;
         return (first - ((first > 25) ? 1 : 0)) * LAB3_ALPHABET.length()
-                + (second - ((second > 25) ? 1 : 0));
+                + (second - ((second > 25) ? 1 : 0));*/
+        return LAB3_ALPHABET.indexOf(bigram.charAt(0)) * LAB3_ALPHABET.length() + LAB3_ALPHABET.indexOf(bigram.charAt(1));
     }
 
     static String rusEncrypt(String bigram, int a, int b) {
@@ -153,32 +147,25 @@ public interface AffineCipher {
     }
 
     static String intToBigram(int x) {
-        int first = x / LAB3_ALPHABET.length();
+        /*int first = x / LAB3_ALPHABET.length();
         int second = Math.floorMod(x, LAB3_ALPHABET.length());
-        return "" + (char) (first + 1072 + ((first > 25) ? 1 : 0)) + (char) (second + 1072 + ((second > 25) ? 1 : 0));
+        String bigram = "" + (char) (first + 1072 + ((first > 25) ? 1 : 0)) + (char) (second + 1072 + ((second > 25) ? 1 : 0));
+        if (bigram.charAt(0) == 'ы') {
+            bigram = "ь" + bigram.charAt(1);
+        } else if (bigram.charAt(0) == 'ь') bigram = "ы" + bigram.charAt(1);
+        if (bigram.charAt(1) == 'ы') {
+            return bigram.charAt(0) + "ь";
+        } else if (bigram.charAt(1) == 'ь') return bigram.charAt(0) + "ы";
+        return bigram;*/
+        //return "" + (char) (first + 1072 + ((first > 25) ? 1 : 0)) + (char) (second + 1072 + ((second > 25) ? 1 : 0));
+        return ""+LAB3_ALPHABET.charAt(x / LAB3_ALPHABET.length()) + LAB3_ALPHABET.charAt( Math.floorMod(x, LAB3_ALPHABET.length()));
     }
 
 //////////////////////////////////
 
-    static boolean rusLangRecogniser(Path path) throws IOException {
-        //Map<String, Double> rusGrams = readGrams("lab1/2_grams_no_spaces_cross_voyna-i-mir-tom-1.tsv");
-        final double SMOOTHER = Collections.min(RUS_BIGRAMS_PROBABILITIES.values()) / 100.;///1000000.;
-        double nonRusBigramBit = Math.log(1.0 / (LAB3_ALPHABET.length() * LAB3_ALPHABET.length()));
-        double rusScore = 0;
-        double nonRusScore = 0;
-        String text = String.join("", Files.readAllLines(path));
-        for (int i = 0; i < text.length() / 2; i++) {
-            String bigram = text.substring(i, i + 2);
-            rusScore += Math.log(RUS_BIGRAMS_PROBABILITIES.getOrDefault(bigram, SMOOTHER));
-            nonRusScore += nonRusBigramBit;
-        }
-        System.out.println(nonRusScore / rusScore);
-        return rusScore >= nonRusScore;
-    }
-
-    static boolean rusLangRecogniser(String text) throws IOException {
+    static boolean rusLangRecogniser(String text) {
         final double SMOOTHER = Collections.min(RUS_BIGRAMS_PROBABILITIES.values()) / 1000.;/// / 1000000.;
-        double nonRusBigramBit = Math.log(1.0 / (LAB3_ALPHABET.length() * LAB3_ALPHABET.length()));
+        double nonRusBigramBit = Math.log(1.0 / (M_SQUARED));
         double rusScore = 0;
         double nonRusScore = 0;
         for (int i = 0; i < text.length() / 2; i++) {

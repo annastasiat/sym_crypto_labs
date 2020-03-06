@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public interface VigenereCipher {
@@ -49,7 +50,7 @@ public interface VigenereCipher {
         return frequencies;
     }
 
-    static void perform(CharMapperWithKey charMapper, String inputFilename, String outputFilename, String key) {
+    static void perform(BiFunction<Character, Character, Character> charMapper, String inputFilename, String outputFilename, String key) {
         if (key.length() == 0) {
             try {
                 Files.copy(Paths.get(inputFilename), Paths.get(outputFilename), StandardCopyOption.REPLACE_EXISTING);
@@ -71,7 +72,7 @@ public interface VigenereCipher {
         try (OutputStream out = new FileOutputStream(outputFilename)) {
             for (int i = 0; i < text.length(); i++) {
                 out.write(Character.toString(charMapper
-                        .map(text.charAt(i), key.charAt(i % key.length())))
+                        .apply(text.charAt(i), key.charAt(i % key.length())))
                         .getBytes());
             }
         } catch (IOException e) {

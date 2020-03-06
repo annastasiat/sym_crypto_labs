@@ -117,21 +117,21 @@ public interface AffineCipher {
         }
     }
 
-    static void perform(StringMapperWithKeys mapper, String inputFilename, String mainOutputFilename, int a, int b) throws IOException {
+    static void perform(TriFunction<String, Integer, Integer, String> mapper, String inputFilename, String mainOutputFilename, int a, int b) throws IOException {
         String text = String.join("", Files.readAllLines(Paths.get(inputFilename)));
         try (OutputStream out = new FileOutputStream("lab3/" + mainOutputFilename + ".txt")) {
             for (int i = 0; i < text.length() / 2; i++) {
-                out.write(mapper.map(text.substring(2 * i, 2 * i + 2), a, b).getBytes());
+                out.write(mapper.apply(text.substring(2 * i, 2 * i + 2), a, b).getBytes());
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    static String perform(StringMapperWithKeys mapper, String text, int a, int b) throws IOException {
+    static String perform(TriFunction<String, Integer, Integer, String> mapper, String text, int a, int b) throws IOException {
         StringBuilder res = new StringBuilder();
         for (int i = 0; i < text.length() / 2; i++) {
-            res.append(mapper.map(text.substring(2 * i, 2 * i + 2), a, b));
+            res.append(mapper.apply(text.substring(2 * i, 2 * i + 2), a, b));
         }
         return res.toString();
     }

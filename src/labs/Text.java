@@ -11,12 +11,14 @@ public class Text {
     private String filename;
     private boolean spaces;
     private String alphabet;
+    private String outputDir;
 
-    public Text(String mainFilename, String alphabet) {
+    public Text(String mainFilename, String outputDir, String alphabet) {
         Path path = Paths.get("texts/" + mainFilename + ".txt");
         this.filename = mainFilename;
         this.alphabet = alphabet;
         this.spaces = alphabet.contains(" ");
+        this.outputDir = outputDir;
         try {
             str = String.join(" ", Files.readAllLines(path))
                     .toLowerCase()
@@ -29,12 +31,12 @@ public class Text {
         }
     }
 
-    public Text(String str, String mainFilename, String alphabet) {
+ /*   public Text(String str, String mainFilename, String alphabet) {
         this.filename = mainFilename;
         this.alphabet = alphabet;
         this.spaces = alphabet.contains(" ");
         this.str = str;
-    }
+    }*/
 
     public Map<String, Double> ngrams(int n, boolean cross) {
         Map<String, Double> ngramsProbs = new HashMap<>();
@@ -64,9 +66,9 @@ public class Text {
         List<Map.Entry<String, Double>> ngramsProbs = new ArrayList<>(ngrams(n, cross).entrySet());
         String outFilename;
         if (n != 1) {
-            outFilename = "lab1/" + n + "_grams_" + (spaces ? "spaces_" : "no_spaces_") + (cross ? "cross_" : "no_cross_") + filename + ".tsv";
+            outFilename = outputDir + n + "_grams_" + (spaces ? "spaces_" : "no_spaces_") + (cross ? "cross_" : "no_cross_") + filename + ".tsv";
         } else {
-            outFilename = "lab1/" + filename + (spaces ? "_spaces" : "") + "_letters_freq.tsv";
+            outFilename = outputDir + filename + (spaces ? "_spaces" : "") + "_letters_freq.tsv";
         }
         //sort
         ngramsProbs.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
@@ -84,7 +86,7 @@ public class Text {
     public void printTable(int n, boolean cross, int multiplier) {
         Map<String, Double> ngramsProbs = ngrams(n, cross);
         String[] alphabetArr = alphabet.split("");
-        String outFilename = "lab1/table_2grams_" + (spaces ? "spaces_" : "") + (cross && n != 1 ? "cross_" : "no_cross_")
+        String outFilename = outputDir+"table_2grams_" + (spaces ? "spaces_" : "") + (cross && n != 1 ? "cross_" : "no_cross_")
                 + filename + ".tsv";
 
         try (OutputStream out = new FileOutputStream(outFilename)) {

@@ -1,17 +1,13 @@
 package labs;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public interface AffineCipher {
     String TAB = "\t";
-    String LINE_SEPARATOR = System.lineSeparator();//"\n";
     String LAB3_ALPHABET = "абвгдежзийклмнопрстуфхцчшщьыэюя";
     Map<String, Double> RUS_BIGRAMS_PROBABILITIES = readGrams("lab1/2_grams_no_spaces_cross_voyna-i-mir-tom-1.tsv");
     int M_SQUARED = LAB3_ALPHABET.length() * LAB3_ALPHABET.length();
@@ -68,17 +64,29 @@ public interface AffineCipher {
         return grams;
     }
 
+    static String perform(TriFunction<String, Integer, Integer, String> mapper, String text, int a, int b) {
+        StringBuilder res = new StringBuilder();
+        for (int i = 0; i < text.length() / 2; i++) {
+            res.append(mapper.apply(text.substring(2 * i, 2 * i + 2), a, b));
+        }
+        return res.toString();
+    }
 
     static void findKeys(String mainFilename) {
-        Text textObj = new Text(mainFilename, LAB3_ALPHABET);
-        List<Map.Entry<String, Double>> textBigramsSorted = new ArrayList<>(
-                textObj.ngrams(2, false).entrySet());
-        textBigramsSorted.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
 
-        List<Map.Entry<String, Double>> rusBigramProbSorted = new ArrayList<>(RUS_BIGRAMS_PROBABILITIES.entrySet());
-        rusBigramProbSorted.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+        Text textObj = new Text(mainFilename, "lab3/", LAB3_ALPHABET);
+
+        List<Map.Entry<String, Double>> textBigramsSorted = textObj.ngrams(2, false).entrySet()
+                .stream().sorted(Comparator.comparingDouble(Map.Entry<String, Double>::getValue).reversed())
+                .collect(Collectors.toList());
+
+        List<Map.Entry<String, Double>> rusBigramProbSorted = RUS_BIGRAMS_PROBABILITIES.entrySet()
+                .stream().sorted(Comparator.comparingDouble(Map.Entry<String, Double>::getValue).reversed())
+                .collect(Collectors.toList());
 
         String text = textObj.getStr();
+
+        textObj.printNgrams(2, false, 1);
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
@@ -92,15 +100,16 @@ public interface AffineCipher {
                             int x2 = bigramToInt(rusBigramProbSorted.get(m).getKey());
 
                             List<Integer> roots = solveEq(x1 - x2, y1 - y2, M_SQUARED);
+
                             for (int a : roots) {
                                 int b = Math.floorMod(y1 - a * x1, M_SQUARED);
                                 if (gcd(a, M_SQUARED) == 1) {
-                                    String detext = perform(AffineCipher::rusDecrypt, text, inverse(a, M_SQUARED), b);
-                                    if (rusLangRecogniser(detext)) {
+                                    String deText = perform(AffineCipher::rusDecrypt, text, inverse(a, M_SQUARED), b);
+                                    if (rusLangRecogniser(deText)) {
                                         System.out.println("a: " + a + "  b: " + b);
                                         try {
                                             Files.write(Paths.get("lab3/key.txt"), ("a: " + a + "  b: " + b).getBytes());
-                                            Files.write(Paths.get("lab3/" + mainFilename + "__" + a + "_" + b + ".txt"), detext.getBytes());
+                                            Files.write(Paths.get("lab3/" + mainFilename + "__" + a + "_" + b + ".txt"), deText.getBytes());
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         }
@@ -115,51 +124,23 @@ public interface AffineCipher {
         }
     }
 
-    static String perform(TriFunction<String, Integer, Integer, String> mapper, String text, int a, int b) {
-        StringBuilder res = new StringBuilder();
-        for (int i = 0; i < text.length() / 2; i++) {
-            res.append(mapper.apply(text.substring(2 * i, 2 * i + 2), a, b));
-        }
-        return res.toString();
-    }
-
 
     static int bigramToInt(String bigram) {
-        /*int first = bigram.charAt(0) - 1072;
-        int second = bigram.charAt(1) - 1072;
-        if (bigram.charAt(0) == 'ы') {
-            first++;
-        } else if (bigram.charAt(0) == 'ь') first--;
-        if (bigram.charAt(1) == 'ы') {
-            first++;
-        } else if (bigram.charAt(1) == 'ь') first--;
-        return (first - ((first > 25) ? 1 : 0)) * LAB3_ALPHABET.length()
-                + (second - ((second > 25) ? 1 : 0));*/
         return LAB3_ALPHABET.indexOf(bigram.charAt(0)) * LAB3_ALPHABET.length() + LAB3_ALPHABET.indexOf(bigram.charAt(1));
+    }
+
+    static String intToBigram(int x) {
+        return "" + LAB3_ALPHABET.charAt(x / LAB3_ALPHABET.length()) + LAB3_ALPHABET.charAt(Math.floorMod(x, LAB3_ALPHABET.length()));
     }
 
     static String rusEncrypt(String bigram, int a, int b) {
         return intToBigram((bigramToInt(bigram) * a + b) % M_SQUARED);
     }
 
-    static String rusDecrypt(String bigram, int a, int b) {
-        return intToBigram(Math.floorMod((bigramToInt(bigram) - b) * a/*inverse(a, M_SQUARED)*/, M_SQUARED));
+    static String rusDecrypt(String bigram, int aInversed, int b) {
+        return intToBigram(Math.floorMod((bigramToInt(bigram) - b) * aInversed, M_SQUARED));
     }
 
-    static String intToBigram(int x) {
-        /*int first = x / LAB3_ALPHABET.length();
-        int second = Math.floorMod(x, LAB3_ALPHABET.length());
-        String bigram = "" + (char) (first + 1072 + ((first > 25) ? 1 : 0)) + (char) (second + 1072 + ((second > 25) ? 1 : 0));
-        if (bigram.charAt(0) == 'ы') {
-            bigram = "ь" + bigram.charAt(1);
-        } else if (bigram.charAt(0) == 'ь') bigram = "ы" + bigram.charAt(1);
-        if (bigram.charAt(1) == 'ы') {
-            return bigram.charAt(0) + "ь";
-        } else if (bigram.charAt(1) == 'ь') return bigram.charAt(0) + "ы";
-        return bigram;*/
-        //return "" + (char) (first + 1072 + ((first > 25) ? 1 : 0)) + (char) (second + 1072 + ((second > 25) ? 1 : 0));
-        return ""+LAB3_ALPHABET.charAt(x / LAB3_ALPHABET.length()) + LAB3_ALPHABET.charAt( Math.floorMod(x, LAB3_ALPHABET.length()));
-    }
 
 //////////////////////////////////
 
@@ -176,6 +157,5 @@ public interface AffineCipher {
         //System.out.println(nonRusScore / rusScore);
         return rusScore >= nonRusScore;
     }
-
 
 }

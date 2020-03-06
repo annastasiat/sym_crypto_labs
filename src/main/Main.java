@@ -1,47 +1,1 @@
-package main;
-
-import labs.Text;
-import labs.VigenereCipher;
-
-public class Main {
-    public static void show(Text text, boolean cross, double H0){
-        double H;
-        H = text.H(1, cross);
-        System.out.println("H1: " + H);
-        System.out.println("Redundancy(H1): " + (1-H/H0));
-        H = text.H(2, cross);
-        System.out.println("H2: " + H);
-        System.out.println("Redundancy(H2): " + (1-H/H0) + "\n");
-        //text.printNgrams(1, cross, 100000);
-        //text.printNgrams(2, cross, 100000);
-
-    }
-
-    public static void main(String[] args) {
-
-        String rusAlphSpace = " абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
-/*
-
-        Text text = new Text("voyna-i-mir-tom-1",  "абвгдежзийклмнопрстуфхцчшщъыьэюя");
-        text.printNgrams(1,true, 1);
-*/
-
-
-
-/*
-        try {
-            Runtime.getRuntime().exec("python plot_ic.py lab2/task3/var12_lab2.tsv lab2/task3/var12_lab2.png");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
-
-        //VigenereCipher.perform(VigenereCipher::encryptChar, "texts/test.txt", "lab2/en_test.txt","ывапрокеукенготимавкенр");
-        //VigenereCipher.perform(VigenereCipher::decryptChar, "lab2/en_test.txt", "lab2/de_test.txt", "ывапрокеукенготимавкенр");
-
-        //VigenereCipher.printIndexesOfCoincidence("texts/var12_lab2.txt",  "lab2/task3/var12_lab2_ic", 2, 31);
-        VigenereCipher.lab2Task2("texts/test.txt", "lab2/task12/test");
-        VigenereCipher.lab2Task3("texts/var12_lab2.txt", "lab2/task3/var12_lab2",
-                "lab1/voyna-i-mir-tom-1_letters_freq.tsv",14);
-
-    }
-}
+package main;import labs.AffineCipher;import labs.StringMapperWithKeys;import labs.Text;import labs.VigenereCipher;import java.io.File;import java.io.IOException;import java.nio.file.Files;import java.nio.file.Paths;import java.util.Arrays;public class Main {    public static void show(Text text, boolean cross, double H0) {        double H;        H = text.H(1, cross);        System.out.println("H1: " + H);        System.out.println("Redundancy(H1): " + (1 - H / H0));        H = text.H(2, cross);        System.out.println("H2: " + H);        System.out.println("Redundancy(H2): " + (1 - H / H0) + "\n");        //text.printNgrams(1, cross, 100000);        //text.printNgrams(2, cross, 100000);    }    public static void main(String[] args) throws IOException {        /*VigenereCipher.lab2Task12("test");        VigenereCipher.lab2Task3("texts/var12_lab2.txt", "lab2/task3/var12_lab2",                "lab1/voyna-i-mir-tom-1_letters_freq.tsv", 14);*/        /*try {            String str = String.join(" ", Files.readAllLines(Paths.get("texts/test.txt")))                    .toLowerCase()                    .replaceAll("ё", "е")                    .replaceAll("[^а-я]", "");            Files.write(Paths.get("texts/test.txt"), str.getBytes());        } catch (IOException e) {            e.printStackTrace();        }*//*        System.out.println(AffineСipher.gcd(455387,456454));        try {            AffineСipher.rusLangRecogniserTest();        } catch (IOException e) {            e.printStackTrace();        }*/        System.out.println("ffff");        AffineCipher.findKeys("var12_lab3");        //AffineСipher.perform(AffineСipher::rusEncrypt, "texts/r.txt", "r_en", 540, 926);        //AffineСipher.perform(AffineСipher::rusDecrypt, "texts/var12_lab3.txt", "var12_lab3_555_331_try",         //       AffineСipher.inverse(555, AffineСipher.M_SQUARED), 331);        //AffineСipher.findKeys("r_en");        //AffineСipher.rusLangRecogniser(String.join("", Files.readAllLines(Paths.get("lab3/var12_lab3_BF_555_331.txt"))));        //AffineСipher.findKeysBF("texts/var12_lab3.txt", "var12_lab3_BF_");        Text t = new Text("var12_lab3_BF_555_331", AffineCipher.LAB3_ALPHABET);        t.printNgrams(2, false, 1);    }}

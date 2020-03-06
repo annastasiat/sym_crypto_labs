@@ -20,12 +20,20 @@ public class Text {
         try {
             str = String.join(" ", Files.readAllLines(path))
                     .toLowerCase()
+                    .replaceAll("ё", "е")
                     .replaceAll("[^" + alphabet + "]", "")
                     .replaceAll("[ ]{2,}", " ")
                     .trim();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public Text(String str, String mainFilename, String alphabet) {
+        this.filename = mainFilename;
+        this.alphabet = alphabet;
+        this.spaces = alphabet.contains(" ");
+        this.str = str;
     }
 
     public Map<String, Double> ngrams(int n, boolean cross) {
@@ -56,12 +64,12 @@ public class Text {
         List<Map.Entry<String, Double>> ngramsProbs = new ArrayList<>(ngrams(n, cross).entrySet());
         String outFilename;
         if (n != 1) {
-            outFilename = "lab1/" + filename + n + "_grams_" + (spaces ? "spaces_" : "no_spaces_") + (cross ? "cross_" : "no_cross___") + ".tsv";
+            outFilename = "lab1/" + n + "_grams_" + (spaces ? "spaces_" : "no_spaces_") + (cross ? "cross_" : "no_cross_") + filename + ".tsv";
         } else {
             outFilename = "lab1/" + filename + (spaces ? "_spaces" : "") + "_letters_freq.tsv";
         }
         //sort
-        ngramsProbs.sort(Map.Entry.comparingByValue(Comparator.reverseOrder())); //ngramsProbs.sort(Comparator.comparing(Map.Entry::getValue, Comparator.reverseOrder()));
+        ngramsProbs.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
 
         try (OutputStream out = new FileOutputStream(outFilename)) {
             //out.write((n + "грамма\tчастота*" + multiplier + "\n").getBytes());
@@ -76,7 +84,7 @@ public class Text {
     public void printTable(int n, boolean cross, int multiplier) {
         Map<String, Double> ngramsProbs = ngrams(n, cross);
         String[] alphabetArr = alphabet.split("");
-        String outFilename = "lab1/table_2grams_" + (spaces ? "spaces_" : "") + (cross && n != 1 ? "cross_" : "no_cross___")
+        String outFilename = "lab1/table_2grams_" + (spaces ? "spaces_" : "") + (cross && n != 1 ? "cross_" : "no_cross_")
                 + filename + ".tsv";
 
         try (OutputStream out = new FileOutputStream(outFilename)) {
@@ -95,29 +103,8 @@ public class Text {
         }
     }
 
-    public int getLength() {
-        return str.length();
-    }
-
     public String getStr() {
         return str;
     }
 
-    public Map<String, Integer> MapLetterInt() {
-        String[] alphabetArr = alphabet.split("");
-        Map<String, Integer> letterInt = new HashMap<>();
-        for (int i = 0; i < alphabetArr.length; i++) {
-            letterInt.put(alphabetArr[i], i);
-        }
-        return letterInt;
-    }
-
-    public Map<Integer, String> MapIntLetter() {
-        String[] alphabetArr = alphabet.split("");
-        Map<Integer, String> intLetter = new HashMap<>();
-        for (int i = 0; i < alphabetArr.length; i++) {
-            intLetter.put(i, alphabetArr[i]);
-        }
-        return intLetter;
-    }
 }

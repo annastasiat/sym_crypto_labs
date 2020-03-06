@@ -3,32 +3,29 @@ package labs;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public interface VigenereCipher {
+    String TAB = "\t";
+    String LINE_SEPARATOR = System.lineSeparator();//"\n";
     String LAB2_ALPHABET = "абвгдежзийклмнопрстуфхцчшщъыьэюя";
-    int ALPHABET_LEN = 1112;
-    List<String> MY_KEYS = Arrays.asList("rg", "fgh", "ebjg", "slgjy", "qdrgtkdvkatrldb");
+    List<String> MY_KEYS = Arrays.asList("", "у", "на",
+            "кот", "кота", "котом", "август", "архалук", "аршинный", "балетоман",
+            "абстракция", "абракадабра", "аскорбиновый", "верхоглядство", "абстрагировать",
+            "гильотинировать", "бумаготворчество", "запротоколировать", "последовательность", "шапкозакидательство", "трансконтинентальный");
 
-    static char encryptChar(char x, char keyI) {
-        return (char) (((int) x + keyI) % 1112);
-    }
-
-    static char decryptChar(char x, char keyI) {
-        return (char) (((int) x + 1112 - keyI) % 1112);
-    }
-
-    static char keyGet(char x, char y) {
-        return (char) (((int) x - (int) y + 32) % 32 + 1072);
+    static char getKeyChar(char x, char y) {
+        return (char) ((x - y + 32) % 32 + 1072);
     }
 
     static char rusEncryptChar(char x, char keyI) {
-        return (char) (((int) x - 1072 + (int) keyI - 1072) % 32 + 1072);
+        return (char) ((x + keyI) % 32 + 1072);
     }
 
     static char rusDecryptChar(char x, char keyI) {
-        return (char) (((int) x - (int) keyI + 32) % 32 + 1072);
+        return (char) ((x - keyI + 32) % 32 + 1072);
     }
 
     static List<List<Character>> getSequences(String message, int r) {
@@ -53,11 +50,19 @@ public interface VigenereCipher {
     }
 
     static void perform(CharMapperWithKey charMapper, String inputFilename, String outputFilename, String key) {
-        String text = "";
+        if (key.length() == 0) {
+            try {
+                Files.copy(Paths.get(inputFilename), Paths.get(outputFilename), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
 
         //READ
+        String text = "";
         try {
-            text = String.join("\n", Files.readAllLines(Paths.get(inputFilename)));
+            text = String.join(LINE_SEPARATOR, Files.readAllLines(Paths.get(inputFilename)));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -74,37 +79,12 @@ public interface VigenereCipher {
         }
     }
 
-    static void lab2Task2(String plaintextFilename, String resultsFileMainName) {
-
-        String resultsFileNameLen;
-        String ciphertextFilename;
-
-        printIndexesOfCoincidence(plaintextFilename, resultsFileMainName + "_plain", 1, 2);
-
-        for (String key : MY_KEYS) {
-            resultsFileNameLen = resultsFileMainName + key.length();
-            ciphertextFilename = resultsFileNameLen + "_en.txt";
-
-            perform(VigenereCipher::encryptChar, plaintextFilename, ciphertextFilename, key);
-            perform(VigenereCipher::decryptChar, ciphertextFilename, resultsFileNameLen + "_de.txt", key);
-
-            printIndexesOfCoincidence(ciphertextFilename, resultsFileNameLen + "_ic", 2, 33);
-
-        }
-
-        try {
-            Runtime.getRuntime().exec("python plot_ic_all.py " + resultsFileMainName + " " + resultsFileMainName + "_ic.png");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     static void printIndexesOfCoincidence(String textFilename, String mainResultsFileName, int rMin, int rMax) {
 
         String text = "";
 
         try {
-            text = String.join("\n", Files.readAllLines(Paths.get(textFilename)));
+            text = String.join(LINE_SEPARATOR, Files.readAllLines(Paths.get(textFilename)));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -117,7 +97,7 @@ public interface VigenereCipher {
         ///PRINT
         try (OutputStream out = new FileOutputStream(mainResultsFileName + ".tsv")) {
             for (int i = 0; i < rMax - rMin; i++) {
-                out.write((i + rMin + "\t" + textIndexes.get(i) + "\n").getBytes());
+                out.write((i + rMin + TAB + textIndexes.get(i) + LINE_SEPARATOR).getBytes());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -152,10 +132,38 @@ public interface VigenereCipher {
 
     }
 
+    static void lab2Task12(String filename) {
+
+        String plaintextFilename = "texts/" + filename + ".txt";
+
+        try (OutputStream out = new FileOutputStream("lab2/task12/" + filename + "_ic.tsv")) {
+
+            for (String key : MY_KEYS) {
+                String resultsFileNameLen = "lab2/task12/de_en/" + filename + key.length();
+                String ciphertextFilename = resultsFileNameLen + "_en.txt";
+
+                perform(VigenereCipher::rusEncryptChar, plaintextFilename, ciphertextFilename, key);
+                perform(VigenereCipher::rusDecryptChar, ciphertextFilename, resultsFileNameLen + "_de.txt", key);
+
+                String ciphertext = String.join(LINE_SEPARATOR, Files.readAllLines(Paths.get(ciphertextFilename)));
+                out.write((key.length() + TAB +
+                        indexOfCoincidence(ciphertext, 1) + LINE_SEPARATOR).getBytes());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Runtime.getRuntime().exec("python plot_ic.py " + "lab2/task12/" + filename + "_ic.tsv " + "lab2/task12/" + filename + "_ic.png");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     static void lab2Task3(String textFilename, String mainFilename, String rusFreqFilename, int r) {
         String message = "";
 
-        //PINT INDEXES OF COINCIDENCE TABLE AND DIAGRAM
+        //PRINT INDEXES OF COINCIDENCE TABLE AND DIAGRAM
         printIndexesOfCoincidence(textFilename, mainFilename + "_ic", 2, 31);
 
         //READING TEXT AND RUS LANG PROBABILITIES
@@ -165,8 +173,8 @@ public interface VigenereCipher {
         try {
             message = String.join("", Files.readAllLines(Paths.get(textFilename)));
             rusFreqMap = Files.readAllLines(Paths.get(rusFreqFilename)).stream().collect(Collectors.toMap(
-                    k -> k.split("\t")[0].charAt(0), v ->
-                            Double.valueOf(v.split("\t")[1].replace(',', '.'))));
+                    k -> k.split(TAB)[0].charAt(0), v ->
+                            Double.valueOf(v.split(TAB)[1].replace(',', '.'))));
             rusFreqSorted = new ArrayList<>(rusFreqMap.entrySet());
             rusFreqSorted.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
         } catch (IOException e) {
@@ -191,8 +199,6 @@ public interface VigenereCipher {
         }
 
         //PRINT SEQUENCES FREQUENCIES TABLE
-        final String TAB = "\t";
-        final String LF = "\n";
         try (OutputStream out = new FileOutputStream(mainFilename + ".tsv")) {
             for (int i = 0; i < LAB2_ALPHABET.length(); i++) {
                 StringBuilder line =
@@ -204,21 +210,23 @@ public interface VigenereCipher {
                     } else {
                         line.append("-").append(TAB).append("-").append(TAB);
                     }
-
                 }
-                out.write(line.append(LF).toString().getBytes());
+                out.write(line.append(LINE_SEPARATOR).toString().getBytes());
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        System.out.println("\nkey(1): " + getKeyVar1(sequencesFreq, rusFreqSorted));
+        //GETTING KEYS
+        String key1 = getKeyVar1(sequencesFreq, rusFreqSorted);
+        System.out.println("\nkey(ic): " + key1);
 
         List<Map<Character, Integer>> NS = sequences.stream().map(VigenereCipher::N).collect(Collectors.toList());
         String key2 = getKeyVar2(NS, rusFreqMap);
-        System.out.println("\nkey(2): " + key2);
+        System.out.println("\nkey(mg): " + key2);
 
-        perform(VigenereCipher::rusDecryptChar, textFilename, mainFilename + "_de.txt", key2);
+        perform(VigenereCipher::rusDecryptChar, textFilename, mainFilename + "_de_key_ic.txt", key1);
+        perform(VigenereCipher::rusDecryptChar, textFilename, mainFilename + "_de_key_mg.txt", key2);
 
 
     }
@@ -226,7 +234,7 @@ public interface VigenereCipher {
     static String getKeyVar1(List<List<Map.Entry<Character, Double>>> sequencesFreq, List<Map.Entry<Character, Double>> rusFreq) {
         StringBuilder key = new StringBuilder();
         for (List<Map.Entry<Character, Double>> seqFreq : sequencesFreq) {
-            key.append(keyGet(seqFreq.get(0).getKey(), rusFreq.get(0).getKey()));
+            key.append(getKeyChar(seqFreq.get(0).getKey(), rusFreq.get(0).getKey()));
             /*Map<Character, Integer> probableCaesarKeys = new HashMap<>();
             for (int i = 0; i < seqFreq.size(); i++) {
                 char k = keyGet(seqFreq.get(i).getKey(), rusFreq.get(i).getKey());
@@ -260,4 +268,5 @@ public interface VigenereCipher {
         }
         return key.toString();
     }
+
 }

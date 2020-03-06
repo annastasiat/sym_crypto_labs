@@ -19,5 +19,6 @@ def plot_IC_all(filename, plot_file_name):
 
 
 plot_IC_all(sys.argv[1], sys.argv[2])
+
 #plot_IC_all("lab2/task12/test", "lab2/task12/test.png")
 

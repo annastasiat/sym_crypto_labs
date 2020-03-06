@@ -4,7 +4,7 @@ import sys
 
 
 
-def plot_IC(filename, plot_file_name):
+def plot_IC(filename, plot_filename):
     #plt.scatter(data.T[0], data.T[1], color='red')
 
     data = np.genfromtxt(filename, delimiter='\t')
@@ -14,6 +14,6 @@ def plot_IC(filename, plot_file_name):
     plt.title("Index of coincidence")
     plt.xlabel('r')
     plt.ylabel('I(Y)')
-    plt.savefig(plot_file_name, dpi=300)
+    plt.savefig(plot_filename, dpi=300)
 
 plot_IC(sys.argv[1], sys.argv[2])

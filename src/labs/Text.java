@@ -13,8 +13,8 @@ public class Text {
     private String alphabet;
     private String outputDir;
 
-    public Text(String mainFilename, String outputDir, String alphabet) {
-        Path path = Paths.get("texts/" + mainFilename + ".txt");
+    public Text(String mainFilename, String inputDir, String outputDir, String alphabet) {
+        Path path = Paths.get(inputDir + mainFilename + ".txt");
         this.filename = mainFilename;
         this.alphabet = alphabet;
         this.spaces = alphabet.contains(" ");
@@ -108,5 +108,20 @@ public class Text {
     public String getStr() {
         return str;
     }
+
+    /*
+    *
+    * public static void showLab1(Text text, boolean cross, double H0) {
+        double H;
+        H = text.H(1, cross);
+        System.out.println("H1: " + H);
+        System.out.println("Redundancy(H1): " + (1 - H / H0));
+        H = text.H(2, cross);
+        System.out.println("H2: " + H);
+        System.out.println("Redundancy(H2): " + (1 - H / H0) + "\n");
+        //text.printNgrams(1, cross, 100000);
+        //text.printNgrams(2, cross, 100000);
+
+    }*/
 
 }
